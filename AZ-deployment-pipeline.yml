@@ -1,0 +1,42 @@
+# ============================== Azure devops pipeline for AKS Bicep Deployment ============
+
+
+
+# Bicep Deployment pipeline 
+
+
+trigger: 
+ branches:
+   include:
+     - main
+
+
+variables:
+  azureserviceConnection: 'prod-spn-connection'
+  resourceGroupname: 'prod-aks-rg' 
+  location: 'eastus' 
+
+
+
+ stages:
+ - stage: Deploy_AKS
+   displayName: 'Deploy AKS Infrastructure'
+   jobs:
+    - job: Deploy 
+      displayName: 
+      pool:
+         vmImage: Ubuntu-latest
+
+      steps: 
+      - task: AzureCLI@2
+        inputs:
+           azureSubscription: $(azureServiceConnection)
+           scriptTpye: bash 
+           scriptlocation: inlinescript 
+           inlinescript: | 
+             echo "Deploying AKS..." 
+             az group create --name $(resourceFroupName) --location $(location)
+             azdeployment group create \
+               --resource-group $(resourceGroupName) 
+               --parameters subnetId='<subnetId>' logAnalyticsworkspaceId='<workspaceId>'    
+
