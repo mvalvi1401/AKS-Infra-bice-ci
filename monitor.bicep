@@ -1,4 +1,4 @@
-# ========================= Log Analytics Workspace Bicep =====================
+// ========================= Log Analytics Workspace Bicep =====================
 
 
 param location string = resourceGroup().location

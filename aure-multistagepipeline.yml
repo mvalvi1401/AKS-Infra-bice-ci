@@ -1,0 +1,62 @@
+trigger: 
+ branches: 
+   include:
+     - main
+
+
+
+variables:
+  azureServiceConnection: 'prod-spn-connection' 
+  resourceGroupname: 'prod-aks-rg' 
+  location: 'eastus' 
+
+
+stages:
+- stage: Deploy_dev
+  displayName: 'Deploy AKS to Dev' 
+  jobs: 
+  - jobs: DeployDev 
+    pool: 
+       vmImage: ubuntu-latest 
+    steps: 
+    - task: AzureCLI@2 
+      inputs:
+        azuresubscription: $(azureserviceconnection) 
+        scriptType: bash
+        scriptlocation: inlinedcript
+        inlinescript: | 
+          az deployment group create \
+            --resource-group $(resourceGroupName) \
+            --template-file aks-dev.bicep \
+            --parameters subnetId='<devsubnetId>' logAnalyticsworkspaceId='<devworkspaceId>' 
+
+
+
+    - stage: Deploy-prod 
+      displayname: 'Deploy AKS to production'  
+      dependson: Deploy_dev
+      condition: succeeded()
+      jobs: 
+      - deployment: Deployprod 
+        environment: 'production' 
+        pool: 
+          vmImage: ubuntu-latest
+        strategy: 
+          runonce:
+            deploy:
+              steps: 
+              - task: AzureCLI@2 
+                inputs:
+                  azuresubscription: $(azureserviceconnection) 
+                  scriptType:  bash
+                  scriptlocation: inlinescript 
+                  inlinescript: | 
+                     az deployment group create \ 
+                        --resource-group $(resourceGroupName) 
+                        --tempate-file aks-prod.bicep \
+                        --parameters subnetId='<prodsubnetId>' logAnalyticsworkspaceId='<prodworkspaceId>'
+
+              
+
+
+

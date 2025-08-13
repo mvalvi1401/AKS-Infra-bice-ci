@@ -1,4 +1,3 @@
-# ====================== AKS with multiple node pools =====================
 
 Param location string = resourcegroup().Location
 Paramaksname string = 'prodAksCluster'
