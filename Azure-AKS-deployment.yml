@@ -1,0 +1,33 @@
+# ============================= Pipeline with parameterized AKS Deployment ====================
+
+trigger: none
+
+
+parameters:
+- name: environment 
+  displayName: 'select Environment'
+  type: string 
+  default: 'dev' 
+  values: 
+  - dev 
+  - prod 
+
+
+
+tages: 
+- stage: Deploy  
+  jobs: 
+  - jobs:
+    pool:
+      vmImage: ubuntu-latest 
+    steps:
+    - task: AzureCLI@2
+      inputs: 
+        azuresubscription: '$(azureserviceconnection)' 
+        scriptType: bash 
+        scriptLocation: inlinescript 
+        inlinescript: | 
+          az deployment group create \ 
+            --resource-group "aks-${{ parameters.environment }}-rg" \ 
+            --template-file aks-${{ parameters.environment }}.bicep \ 
+            --parameters subnetId='${{ parameters.environment }}subnetId' logAnalyticsworkspaceId='${{ parameters.environment }}workspaceId'
